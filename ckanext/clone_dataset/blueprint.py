@@ -28,14 +28,16 @@ def clone(id):
 
     # Update necessary fields.
     dt = datetime.datetime.utcnow().isoformat()
-    dataset_dict['title'] = '[CLONE] ' + dataset_dict['title']
-    dataset_dict['name'] = 'clone-' + dataset_dict['name']
+    dataset_dict['title'] = 'COPY of - ' + dataset_dict['title']
+    dataset_dict['name'] = 'copy-of-' + dataset_dict['name']
     dataset_dict['metadata_created'] = dt
     dataset_dict['metadata_modified'] = dt
 
     del dataset_dict['id']
-    del dataset_dict['identifiers']
 
+    if 'identifiers' in dataset_dict:
+        del dataset_dict['identifiers']
+        
     if 'revision_id' in dataset_dict:
         del dataset_dict['revision_id']
 
