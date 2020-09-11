@@ -1,0 +1,55 @@
+import ckan.logic as logic
+import ckan.plugins.toolkit as toolkit
+import logging
+import datetime
+
+from pprint import pformat
+from flask import Blueprint
+from ckan.plugins.toolkit import get_action
+
+clean_dict = logic.clean_dict
+get_action = toolkit.get_action
+h = toolkit.h
+log = logging.getLogger(__name__)
+parse_params = logic.parse_params
+request = toolkit.request
+tuplize_dict = logic.tuplize_dict
+
+clone_dataset = Blueprint('clone_dataset', __name__, url_prefix=u'/ckan-admin')
+
+def clone(id):
+    # Get current dataset.
+    try:
+        dataset_dict = get_action('package_show')({}, {'id': id})
+    except Exception as e:
+        log.error('Error loading dataset. id:%s' % id)
+        h.flash_error('Error loading dataset.')
+        return h.redirect_to('/dataset')
+
+    # Update necessary fields.
+    dt = datetime.datetime.utcnow().isoformat()
+    dataset_dict['title'] = '[CLONE] ' + dataset_dict['title']
+    dataset_dict['name'] = 'clone-' + dataset_dict['name']
+    dataset_dict['metadata_created'] = dt
+    dataset_dict['metadata_modified'] = dt
+
+    del dataset_dict['id']
+    del dataset_dict['identifiers']
+
+    if 'revision_id' in dataset_dict:
+        del dataset_dict['revision_id']
+
+    if 'revision_timestamp' in dataset_dict:
+        del dataset_dict['revision_timestamp']
+
+    try:
+        get_action('package_create')({}, dataset_dict)
+        h.flash_success('Dataset %s is created.' % dataset_dict['title'])
+        return h.redirect_to('/dataset')
+    except Exception as e:
+        log.error('Error cloning dataset.')
+        h.flash_error('Error cloning dataset.')
+        return h.redirect_to('/dataset')
+
+
+clone_dataset.add_url_rule(u'/clone/<id>', methods=[u'POST'], view_func=clone)
