@@ -20,10 +20,17 @@ clone_dataset = Blueprint('clone_dataset', __name__, url_prefix=u'/ckan-admin')
 def clone(id):
     # Get current dataset.
     try:
+        # Check the user has permission to clone the dataset
+        toolkit.check_access('package_update', {}, {'id': id})
+
         dataset_dict = get_action('package_show')({}, {'id': id})
+    except NotAuthorized as e:
+        log.error(str(e))
+        h.flash_error(str(e))
+        return h.redirect_to('/dataset')
     except Exception as e:
         log.error('Error loading dataset. id:%s' % id)
-        h.flash_error('Error loading dataset.')
+        h.flash_error('Error loading dataset. {0}'.format(str(e)))
         return h.redirect_to('/dataset')
 
     # Update necessary fields.
@@ -33,23 +40,33 @@ def clone(id):
     dataset_dict['metadata_created'] = dt
     dataset_dict['metadata_modified'] = dt
 
-    del dataset_dict['id']
+    dataset_dict.pop('id')
 
     if 'identifiers' in dataset_dict:
-        del dataset_dict['identifiers']
-        
+        dataset_dict.pop('identifiers')
+
     if 'revision_id' in dataset_dict:
-        del dataset_dict['revision_id']
+        dataset_dict.pop('revision_id')
 
     if 'revision_timestamp' in dataset_dict:
-        del dataset_dict['revision_timestamp']
+        dataset_dict.pop('revision_timestamp')
+
+    # Drop resources.
+    if 'resources' in dataset_dict:
+        dataset_dict.pop('resources')
+
+    # Drop the relationships for now.
+    if 'relationships_as_object' in dataset_dict:
+        dataset_dict.pop('relationships_as_object')
+    if 'relationships_as_subject' in dataset_dict:
+        dataset_dict.pop('relationships_as_subject')
 
     try:
         get_action('package_create')({}, dataset_dict)
         h.flash_success('Dataset %s is created.' % dataset_dict['title'])
         return h.redirect_to('/dataset')
     except Exception as e:
-        log.error('Error cloning dataset.')
+        log.error(str(e))
         h.flash_error('Error cloning dataset.')
         return h.redirect_to('/dataset')
 
