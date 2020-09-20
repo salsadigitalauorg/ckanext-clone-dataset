@@ -60,6 +60,13 @@ def clone(id):
         dataset_dict.pop('relationships_as_object')
     if 'relationships_as_subject' in dataset_dict:
         dataset_dict.pop('relationships_as_subject')
+    # Also drop any specific fields that may contain references that trigger relationship creation
+    if 'series_or_collection' in dataset_dict:
+        dataset_dict.pop('series_or_collection')
+    if 'related_datasets' in dataset_dict:
+        dataset_dict.pop('related_datasets')
+    if 'related_resources' in dataset_dict:
+        dataset_dict.pop('related_resources')
 
     try:
         get_action('package_create')({}, dataset_dict)
