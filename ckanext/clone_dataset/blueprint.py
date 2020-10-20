@@ -6,9 +6,9 @@ import datetime
 from pprint import pformat
 from flask import Blueprint
 from ckan.plugins.toolkit import get_action
+from ckanext.clone_dataset.helpers import get_incremental_package_name
 
 clean_dict = logic.clean_dict
-get_action = toolkit.get_action
 h = toolkit.h
 log = logging.getLogger(__name__)
 parse_params = logic.parse_params
@@ -36,9 +36,12 @@ def clone(id):
     # Update necessary fields.
     dt = datetime.datetime.utcnow().isoformat()
     dataset_dict['title'] = 'COPY of - ' + dataset_dict['title']
-    dataset_dict['name'] = 'copy-of-' + dataset_dict['name']
     dataset_dict['metadata_created'] = dt
     dataset_dict['metadata_modified'] = dt
+
+    # Make sure name is unique.
+    dataset_dict['name'] = 'copy-of-' + dataset_dict['name']
+    dataset_dict['name'] = get_incremental_package_name(dataset_dict['name'])
 
     dataset_dict.pop('id')
 
