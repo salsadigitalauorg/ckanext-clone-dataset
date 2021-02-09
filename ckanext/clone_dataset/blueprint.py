@@ -14,14 +14,18 @@ log = logging.getLogger(__name__)
 parse_params = logic.parse_params
 request = toolkit.request
 tuplize_dict = logic.tuplize_dict
+NotAuthorized = toolkit.NotAuthorized
 
 clone_dataset = Blueprint('clone_dataset', __name__, url_prefix=u'/ckan-admin')
+
 
 def clone(id):
     # Get current dataset.
     try:
+        # Need to set the user info in the context for check_access
+        context = {'user': toolkit.g.user, 'userobj': toolkit.g.userobj}
         # Check the user has permission to clone the dataset
-        toolkit.check_access('package_update', {}, {'id': id})
+        toolkit.check_access('package_update', context, {'id': id})
 
         dataset_dict = get_action('package_show')({}, {'id': id})
     except NotAuthorized as e:
