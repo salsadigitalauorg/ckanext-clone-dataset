@@ -58,6 +58,9 @@ def clone(id):
     if 'revision_timestamp' in dataset_dict:
         dataset_dict.pop('revision_timestamp')
 
+    if 'metadata_review_date' in dataset_dict:
+        dataset_dict.pop('metadata_review_date')
+
     # Drop resources.
     if 'resources' in dataset_dict:
         dataset_dict.pop('resources')
