@@ -1,0 +1,6 @@
+clone-dataset:
+  extra:
+    preload:
+      - vendor/jquery
+  contents:
+    - clone-dataset.js
