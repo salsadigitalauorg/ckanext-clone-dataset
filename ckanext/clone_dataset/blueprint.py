@@ -73,8 +73,6 @@ def clone(id):
     # Also drop any specific fields that may contain references that trigger relationship creation
     if 'series_or_collection' in dataset_dict:
         dataset_dict.pop('series_or_collection')
-    if 'related_datasets' in dataset_dict:
-        dataset_dict.pop('related_datasets')
     if 'related_resources' in dataset_dict:
         dataset_dict.pop('related_resources')
 
