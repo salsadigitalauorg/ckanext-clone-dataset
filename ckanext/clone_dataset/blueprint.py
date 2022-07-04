@@ -50,7 +50,7 @@ def clone(id):
     dataset_dict.pop('id')
 
     if 'identifiers' in dataset_dict:
-        dataset_dict.pop('identifiers')
+        dataset_dict['identifiers'] = None
 
     if 'revision_id' in dataset_dict:
         dataset_dict.pop('revision_id')
