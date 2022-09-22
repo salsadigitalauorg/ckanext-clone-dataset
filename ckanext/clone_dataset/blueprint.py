@@ -82,7 +82,12 @@ def clone(id):
         return h.redirect_to('/dataset')
     except Exception as e:
         log.error(str(e))
-        h.flash_error('Error cloning dataset.')
+        msg="""
+        <p>The cloned dataset contains invalid entries:</p>
+        <ul>
+            <li>%s</li>
+        </ul>"""% e.error_summary
+        h.flash_error(msg, allow_html=True)
         return h.redirect_to('/dataset')
 
 
