@@ -11,7 +11,7 @@ def _check_group_auth(context, data_dict):
                 True otherwise. i.e. True is the default. A blank data_dict
                 mentions no groups, so it returns True.
     '''
-    # FIXME This code is shared amoung other logic.auth files and should be
+    # FIXME This code is shared among other logic.auth files and should be
     # somewhere better
     if not data_dict:
         return True
