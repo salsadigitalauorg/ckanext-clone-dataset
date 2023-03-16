@@ -22,9 +22,9 @@ def clone(id):
     try:
         # Need to set the user info in the context for check_access
         context = {'user': toolkit.g.user, 'auth_user_obj': toolkit.g.userobj}
+        dataset_dict = get_action('package_show')(context.copy(), {'id': id})
         # Check the user has permission to clone the dataset
-        check_access('package_update', context, {'id': id})
-        dataset_dict = get_action('package_show')(context, {'id': id})
+        check_access('package_create', context.copy(), dataset_dict)
     except NotAuthorized as e:
         log.error(str(e))
         h.flash_error(str(e))
