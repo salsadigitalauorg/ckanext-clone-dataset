@@ -1,33 +1,30 @@
-import ckan.logic as logic
+import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 import logging
 import datetime
 
-from pprint import pformat
 from flask import Blueprint
-from ckan.plugins.toolkit import get_action
 from ckanext.clone_dataset.helpers import get_incremental_package_name
+from ckanext.clone_dataset.interfaces import IClone
 
-clean_dict = logic.clean_dict
-h = toolkit.h
 log = logging.getLogger(__name__)
-parse_params = logic.parse_params
+h = toolkit.h
 request = toolkit.request
-tuplize_dict = logic.tuplize_dict
 NotAuthorized = toolkit.NotAuthorized
+get_action = toolkit.get_action
+check_access = toolkit.check_access
 
-clone_dataset = Blueprint('clone_dataset', __name__, url_prefix=u'/ckan-admin')
+clone_dataset = Blueprint('clone_dataset', __name__)
 
 
 def clone(id):
     # Get current dataset.
     try:
         # Need to set the user info in the context for check_access
-        context = {'user': toolkit.g.user, 'userobj': toolkit.g.userobj}
+        context = {'user': toolkit.g.user, 'auth_user_obj': toolkit.g.userobj}
         # Check the user has permission to clone the dataset
-        toolkit.check_access('package_update', context, {'id': id})
-
-        dataset_dict = get_action('package_show')({}, {'id': id})
+        check_access('package_update', context, {'id': id})
+        dataset_dict = get_action('package_show')(context, {'id': id})
     except NotAuthorized as e:
         log.error(str(e))
         h.flash_error(str(e))
@@ -49,17 +46,11 @@ def clone(id):
 
     dataset_dict.pop('id')
 
-    if 'identifiers' in dataset_dict:
-        dataset_dict['identifiers'] = None
-
     if 'revision_id' in dataset_dict:
         dataset_dict.pop('revision_id')
 
     if 'revision_timestamp' in dataset_dict:
         dataset_dict.pop('revision_timestamp')
-
-    if 'metadata_review_date' in dataset_dict:
-        dataset_dict.pop('metadata_review_date')
 
     # Drop resources.
     if 'resources' in dataset_dict:
@@ -70,14 +61,11 @@ def clone(id):
         dataset_dict.pop('relationships_as_object')
     if 'relationships_as_subject' in dataset_dict:
         dataset_dict.pop('relationships_as_subject')
-    # Also drop any specific fields that may contain references that trigger relationship creation
-    if 'series_or_collection' in dataset_dict:
-        dataset_dict.pop('series_or_collection')
-    if 'related_resources' in dataset_dict:
-        dataset_dict.pop('related_resources')
 
     try:
-        get_action('package_create')({}, dataset_dict)
+        for plugin in plugins.PluginImplementations(IClone):
+            plugin.clone_modify_dataset(context, dataset_dict)
+        get_action('package_create')(context, dataset_dict)
         h.flash_success('Dataset %s is created.' % dataset_dict['title'])
         return h.redirect_to('/dataset')
     except Exception as e:
