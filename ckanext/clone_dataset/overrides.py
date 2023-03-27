@@ -44,7 +44,7 @@ def _check_group_auth(context, data_dict):
         groups = groups - set(pkg_groups)
 
     for group in groups:
-        # QDES Modification.
+        # Modification.
         # Only check user permission if group is not an organisation and is not coming from clone_dataset
         # When we a cloning a dataset we need to ignore group (categories)
         # Any user can add their organisation datasets to a category
