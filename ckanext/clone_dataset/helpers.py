@@ -2,7 +2,6 @@ import logging
 
 from ckan.model import Session
 from ckan.model.package import Package
-from pprint import pformat
 
 log = logging.getLogger(__name__)
 
