@@ -35,7 +35,7 @@ def clone(id):
         return h.redirect_to('/dataset')
 
     # Update necessary fields.
-    dt = datetime.datetime.now(datetime.UTC).isoformat()
+    dt = datetime.datetime.now(datetime.timezone.utc).isoformat()
     dataset_dict['title'] = 'COPY of - ' + dataset_dict['title']
     dataset_dict['metadata_created'] = dt
     dataset_dict['metadata_modified'] = dt
